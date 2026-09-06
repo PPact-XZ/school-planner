@@ -1,0 +1,53 @@
+{# T002 Screen 4 — Task Detail, read-only modal over the Calendar (+ E3 delete).
+   All user data is injected by modals.js via .textContent — nothing here
+   interpolates task fields. hidden ⇄ flex toggled from JS, never both.
+   z-[10000]: same P8 fix as _task_modal.html — .fc-popover is z-index:9999,
+   unlayered, global; z-50 would paint this modal UNDER a popover. #}
+<div id="task-detail-modal"
+     class="hidden fixed inset-0 z-[10000] bg-black/50 items-center justify-center p-4"
+     role="dialog" aria-modal="true" aria-labelledby="detail-title">
+  <div class="bg-white rounded-2xl shadow-md w-full max-w-md p-6 max-h-full overflow-y-auto">
+    <div class="flex items-start justify-between gap-3 mb-4">
+      <h2 id="detail-title" class="text-lg font-bold text-gray-800 break-words"></h2>
+      <span id="detail-status"
+            class="inline-block text-sm px-3 py-1 rounded-full whitespace-nowrap bg-yellow-100 text-yellow-800">ยังไม่ส่ง</span>
+    </div>
+
+    <p class="text-sm text-gray-600 mb-1">วิชา</p>
+    <p id="detail-subject" class="text-gray-800 mb-3"></p>
+
+    <p class="text-sm text-gray-600 mb-1">วันส่ง</p>
+    <p id="detail-deadline" class="text-gray-800 mb-3"></p>
+
+    <div id="detail-drive-row" class="hidden mb-3">
+      <p class="text-sm text-gray-600 mb-1">ลิงก์ Google Drive</p>
+      <a id="detail-drive-link" target="_blank" rel="noopener noreferrer"
+         class="text-blue-600 underline break-all"></a>
+    </div>
+
+    <div id="detail-notes-row" class="hidden mb-3">
+      <p class="text-sm text-gray-600 mb-1">หมายเหตุ</p>
+      <p id="detail-notes" class="text-gray-800 whitespace-pre-wrap break-words"></p>
+    </div>
+
+    <p id="detail-error" class="text-sm text-red-700 mb-3 empty:mb-0"></p>
+
+    <div id="detail-actions" class="flex justify-end gap-2 pt-2">
+      <button id="detail-delete" type="button"
+              class="bg-red-100 text-red-700 rounded-lg px-4 py-2 mr-auto">ลบ</button>
+      <button id="detail-edit" type="button"
+              class="bg-gray-200 text-gray-700 rounded-lg px-4 py-2">แก้ไข</button>
+      <button id="detail-toggle-submit" type="button"
+              class="bg-blue-600 text-white rounded-lg px-4 py-2">ส่งงานแล้ว</button>
+    </div>
+
+    {# E3 in-modal confirm — replaces the action row; never window.confirm(). #}
+    <div id="detail-delete-confirm" class="hidden items-center justify-end gap-2 pt-2">
+      <span class="text-sm text-red-700 mr-auto">ลบงานนี้ถาวร?</span>
+      <button id="detail-delete-no" type="button"
+              class="bg-gray-200 text-gray-700 rounded-lg px-4 py-2">ยกเลิก</button>
+      <button id="detail-delete-yes" type="button"
+              class="bg-red-100 text-red-700 rounded-lg px-4 py-2">ลบ</button>
+    </div>
+  </div>
+</div>

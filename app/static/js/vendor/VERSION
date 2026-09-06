@@ -1,0 +1,23 @@
+FullCalendar 6.1.15 (Standard Bundle, global/UMD build)
+Source: https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js
+File:   fullcalendar.min.js
+SHA-256: 673b42b6c0032ca6d414afd7ea73989c9af479e9665765f77612c307f24ae9f3
+
+FullCalendar Core locale: th, 6.1.15 (global build)
+Source: https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.15/locales/th.global.min.js
+File:   fullcalendar-locale-th.min.js
+SHA-256: 82effe7ce8b819d2085c58c6fdf4222afb90f7421130e49f8c9970217439c7cb
+
+Deviation from ARCHITECTURE.md §3.5's single-file sketch (fullcalendar.min.js
+only): v6 ships locale data as a separate file from the core bundle, so a
+second vendored file is required for Thai month names / button text. No CDN
+used at runtime by either file. Note: the th locale's own `week.dow` is 1
+(Monday) — consistent with, but not a substitute for, the explicit
+`firstDay: 1` set in calendar.js (ARCHITECTURE Decision 1b requires the
+explicit setting regardless of what a locale's default happens to be).
+
+Provenance: both hashes recomputed locally (`shasum -a 256`) against the
+files vendored into this directory and confirmed to match upstream jsdelivr
+6.1.15 exactly (2026-07-25 security review). Nothing in the repo verifies
+this automatically — a future version bump must recompute and update both
+lines here by hand.

@@ -1,0 +1,43 @@
+/* Tailwind v4 input. Built to app.css by the standalone CLI (no Node):
+   ./tailwindcss -i app/static/css/input.css -o app/static/css/app.css --minify
+   source(none) disables auto-detection so the build scans ONLY the files below
+   (deterministic; never sweeps docs/ or the sibling repo for stray class names). */
+@import "tailwindcss" source(none);
+
+@source "../../templates";
+@source "../js";
+/* app/calendar/events.py emits chip classNames server-side; without this the
+   build never sees them and the calendar renders unstyled chips (P6 defect). */
+@source "../../calendar";
+
+/* FullCalendar chip colours — cascade fix (P6).
+   FullCalendar's bundle injects its CSS unlayered at runtime; unlayered
+   declarations beat Tailwind v4's @layer utilities for every property they
+   set, so the T002 chip utilities lose background-color and border on
+   .fc-h-event and text color on its .fc-event-main descendant. Instead of
+   fighting the cascade, feed the vendor's documented theming variables per
+   T002 palette row (ARCHITECTURE §2.2); the vendor's own rules then paint
+   T002's colours. Set on the chip element, these beat the vendor's :root
+   defaults by direct-vs-inherited — no layer or specificity contest at all.
+   These rules must stay OUTSIDE any @layer. The class names on the elements
+   remain exactly the locked ones (app/calendar/events.py CHIP_*).
+   border-color = bg colour renders the vendor's forced 1px border invisible,
+   matching T002's flat borderless chips.
+   bg-blue-100 is the P8 schedule chip (§2.2), pre-staged because the vendor
+   default (#3788d8) is also blue — at P8 this same defect would camouflage
+   as a plausible-looking wrong blue. */
+.fc-event.bg-yellow-100 {
+  --fc-event-bg-color: var(--color-yellow-100);
+  --fc-event-border-color: var(--color-yellow-100);
+  --fc-event-text-color: var(--color-yellow-800);
+}
+.fc-event.bg-green-100 {
+  --fc-event-bg-color: var(--color-green-100);
+  --fc-event-border-color: var(--color-green-100);
+  --fc-event-text-color: var(--color-green-800);
+}
+.fc-event.bg-blue-100 {
+  --fc-event-bg-color: var(--color-blue-100);
+  --fc-event-border-color: var(--color-blue-100);
+  --fc-event-text-color: var(--color-blue-800);
+}

@@ -1,0 +1,19 @@
+{# Shared navbar (T002 Screen 2 + E2, ARCHITECTURE §2.1). user_name is a
+   Google ID-token claim that never passes clean_str — it renders in a TEXT
+   NODE only (autoescape covers exactly that); never move it into an
+   attribute, a script block, or behind |safe. E2: the user-name IS the
+   /settings link; idle styling is byte-identical to the locked Screen 2
+   navbar (hover:underline is the only addition). #}
+<div class="flex items-center justify-between bg-white rounded-xl shadow-md px-4 py-3 mx-4 mt-4">
+  <a href="{{ url_for('calendar.index') }}" class="font-bold text-blue-600">📅 School Planner</a>
+  <div class="flex items-center gap-3">
+    <a id="navbar-user"
+       href="{{ url_for('settings.page') }}"
+       class="text-sm text-gray-600 hover:underline">{{ user_name }}</a>
+    <button id="logout-btn"
+            type="button"
+            class="text-sm bg-red-100 text-red-700 rounded px-3 py-1">
+      ออกจากระบบ
+    </button>
+  </div>
+</div>

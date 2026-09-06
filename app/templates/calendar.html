@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}School Planner{% endblock %}
+
+{% block navbar %}{% include "partials/_navbar.html" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 pt-4 pb-24">
+  {# FullCalendar mounts here; its own headerToolbar renders the month title
+     and ◀ ▶ (T002 Screen 2), so no hand-rolled month header is needed. #}
+  <div id="calendar" class="bg-white rounded-2xl shadow-md p-4"></div>
+
+  {# P10 (E5) — empty state and load error, both BELOW the grid so T002's
+     locked Screen 2 is never covered. Each toggles on the presence/absence of
+     `hidden` alone: pairing it with a second display utility is the trap that
+     shipped a modal at display:block in P5b. Copy says "เดือนนี้" because the
+     feed is windowed to the visible month — claiming the user has no tasks at
+     all would be false whenever they have some in another month. #}
+  <p id="calendar-empty"
+     class="hidden text-sm text-gray-600 text-center mt-4">ยังไม่มีงานในเดือนนี้ — กดปุ่ม + เพื่อเพิ่มงาน</p>
+  <p id="calendar-error" role="alert"
+     class="hidden text-sm text-red-700 text-center mt-4">โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่</p>
+</div>
+
+{# T002 Screen 2's floating "+" button (Add Task) — live as of P5b; modals.js
+   binds its click to the Add modal. #}
+<button id="add-task-btn"
+        type="button"
+        aria-label="เพิ่มงาน"
+        class="fixed bottom-6 right-6 bg-blue-600 text-white rounded-full w-14 h-14 text-3xl leading-none shadow-lg">
+  +
+</button>
+
+{# Include order is load-bearing: both modals are z-50, so DOM order stacks
+   them — the Add/Edit modal must paint ABOVE the Detail modal when แก้ไข
+   opens it over this one (Flow 4). #}
+{% include "partials/_detail_modal.html" %}
+{% include "partials/_task_modal.html" %}
+
+<script src="{{ url_for('static', filename='js/vendor/fullcalendar.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/fullcalendar-locale-th.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/calendar.js') }}"></script>
+<script src="{{ url_for('static', filename='js/modals.js') }}"></script>
+{% endblock %}

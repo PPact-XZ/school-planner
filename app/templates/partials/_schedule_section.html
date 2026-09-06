@@ -1,0 +1,70 @@
+{# E1 — ตารางเรียน (ARCHITECTURE §2.1 E1, Flow 7; T002 hosts no schedule UI, and
+   its Screen-5 layout is explicitly free). Sibling card to the settings card.
+   Rows are rendered by schedules.js — ONE render path, textContent only:
+   `room` survives clean_str with < > " ' intact and must never cross an
+   HTML-parsing sink. The day <select> is the single Thai-day-label source
+   (constants.DAY_LABELS_TH; option value = T002 day_of_week, 0=จันทร์). #}
+<div id="schedules-section" class="bg-white rounded-2xl shadow-md p-6 mt-4">
+  <h2 class="text-lg font-bold text-gray-800 mb-4">ตารางเรียน</h2>
+
+  <p id="schedules-empty" class="hidden text-sm text-gray-600 mb-3">ยังไม่มีตารางเรียน</p>
+  <ul id="schedules-list" class="divide-y divide-gray-100 mb-4"></ul>
+
+  <h3 id="schedule-form-title" class="text-sm font-bold text-gray-800 mb-3">เพิ่มคาบเรียน</h3>
+  {# novalidate: same rationale as the task modal — the server's Thai messages
+     are the one authoritative boundary. #}
+  <form id="schedule-form" novalidate>
+    <label for="schedule-subject" class="block text-sm text-gray-600 mb-1">วิชา</label>
+    <select id="schedule-subject" name="subject"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 mb-1 bg-white">
+      <option value="">เลือกวิชา</option>
+      {% for subject in subjects %}
+      <option value="{{ subject }}">{{ subject }}</option>
+      {% endfor %}
+    </select>
+    <p data-error-for="subject" class="text-sm text-red-700 mb-3 empty:mb-0"></p>
+
+    <label for="schedule-day" class="block text-sm text-gray-600 mb-1">วัน</label>
+    <select id="schedule-day" name="day_of_week"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 mb-1 bg-white">
+      <option value="">เลือกวัน</option>
+      {% for label in day_labels %}
+      <option value="{{ loop.index0 }}">{{ label }}</option>
+      {% endfor %}
+    </select>
+    <p data-error-for="day_of_week" class="text-sm text-red-700 mb-3 empty:mb-0"></p>
+
+    <div class="flex gap-3">
+      <div class="flex-1">
+        <label for="schedule-start" class="block text-sm text-gray-600 mb-1">เวลาเริ่ม</label>
+        <input id="schedule-start" name="start_time" type="time"
+               class="w-full border border-gray-300 rounded-lg px-3 py-2 mb-1" />
+        <p data-error-for="start_time" class="text-sm text-red-700 mb-3 empty:mb-0"></p>
+      </div>
+      <div class="flex-1">
+        <label for="schedule-end" class="block text-sm text-gray-600 mb-1">เวลาเลิก</label>
+        <input id="schedule-end" name="end_time" type="time"
+               class="w-full border border-gray-300 rounded-lg px-3 py-2 mb-1" />
+        <p data-error-for="end_time" class="text-sm text-red-700 mb-3 empty:mb-0"></p>
+      </div>
+    </div>
+
+    <label for="schedule-room" class="block text-sm text-gray-600 mb-1">
+      ห้องเรียน <span class="text-gray-400">(ไม่บังคับ)</span>
+    </label>
+    <input id="schedule-room" name="room" type="text" maxlength="50"
+           class="w-full border border-gray-300 rounded-lg px-3 py-2 mb-1" />
+    <p data-error-for="room" class="text-sm text-red-700 mb-3 empty:mb-0"></p>
+
+    {# Catch-all: the "limit" cap error has no matching input; network/500
+       failures land here too (same as task-form-error). #}
+    <p id="schedule-form-error" class="text-sm text-red-700 mb-3 empty:mb-0"></p>
+
+    <div class="flex justify-end gap-2 pt-2">
+      <button id="schedule-cancel" type="button"
+              class="hidden bg-gray-200 text-gray-700 rounded-lg px-4 py-2">ยกเลิก</button>
+      <button id="schedule-save" type="submit"
+              class="bg-blue-600 text-white rounded-lg px-4 py-2">บันทึก</button>
+    </div>
+  </form>
+</div>

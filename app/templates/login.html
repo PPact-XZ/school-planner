@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}เข้าสู่ระบบ - School Planner{% endblock %}
+{% block content %}
+{# T002 Screen 1: white card on bg-blue-50 (locked specific-screen rule beats
+   the general bg-gray-50 palette row — ARCHITECTURE §2.2). base.html's body
+   stays bg-gray-50; this wrapper covers the viewport so Login still renders
+   on blue-50. #}
+<div class="min-h-screen flex items-center justify-center bg-blue-50">
+  <div class="bg-white rounded-2xl shadow-lg p-8 max-w-sm w-full text-center">
+    <div class="text-5xl mb-4" aria-hidden="true">📅</div>
+    <h1 class="text-2xl font-bold mb-2">School Planner</h1>
+    <p class="text-gray-500 mb-6">ติดตามงานและตารางเรียนง่ายๆ</p>
+    <button id="google-signin-btn"
+            class="border border-blue-600 text-blue-600 rounded-xl px-4 py-2 w-full font-medium">
+      เข้าสู่ระบบด้วย Google
+    </button>
+    <p id="login-error" class="text-red-600 text-sm mt-4 hidden" role="alert"></p>
+  </div>
+</div>
+{# Subresource Integrity (P13). gstatic is a third party serving executable
+   script onto the one page that handles an ID token, so both tags are pinned
+   by hash. Feasible because the URL pins 10.12.2 (not a floating "latest"
+   tag) and gstatic serves it immutable (cache-control: public,
+   max-age=31536000), so a hash only needs recomputing on a deliberate version
+   bump — exactly when a loud failure is desirable. gstatic also returns
+   access-control-allow-origin: *, which is what lets crossorigin="anonymous"
+   work alongside integrity=.
+
+   ⚠️ SRI HAS NO REPORT-ONLY MODE — unlike CSP there is no staged rollout and
+   no env var to unset. A stale hash does not degrade: the browser refuses the
+   script outright, auth.js never loads, and THE SIGN-IN BUTTON IS PERMANENTLY
+   INERT with the app unreachable. Rollback is a revert plus a redeploy on a
+   cold-starting free instance.
+
+   On ANY version bump recompute BOTH hashes and confirm a real sign-in in a
+   browser before pushing:
+
+     curl -sL <url> | openssl dgst -sha384 -binary | openssl base64 -A
+
+   What the tests do and do not cover, corrected after the P13 security
+   review measured it (the first draft of this comment claimed no test could
+   catch a wrong hash — that was WRONG, and wrong in an unsafe direction).
+   SRI is enforced at script FETCH time, before any first-party JS runs, so
+   auth.js's early-return on an empty config is irrelevant to it: a corrupted
+   hash makes Chromium refuse the script, and the resulting console error
+   already fails the 17 flow tests that assert console_errors == [].
+   tests/e2e/test_sri.py makes that net deliberate rather than incidental.
+   Still true, and the reason to verify in a browser anyway: the meta guard
+   checks the attributes are PRESENT, not CORRECT, and the e2e net needs a
+   reachable gstatic — offline it degrades to a filtered "Failed to load
+   resource" and skips.
+
+   CEILING: this pins the two tags WE write, not the whole page. Firebase's
+   compat SDK injects apis.google.com/js/api.js (Google's gapi_iframes popup
+   helper — the script script-src had to be widened for at P12) at runtime.
+   It is injected rather than authored here, so it carries no integrity and
+   cannot. apis.google.com stays inside this page's trust boundary. SRI
+   narrowed that boundary; it did not close it. #}
+{# P12 CSP pre-work. This WAS an inline <script> setting window.__FIREBASE_CONFIG__,
+   and script-src has never included 'unsafe-inline' — so the moment CSP goes
+   from Report-Only to enforcing, that script is blocked, auth.js reads apiKey
+   off {} and early-returns, and THE SIGN-IN BUTTON IS PERMANENTLY INERT with
+   the app unreachable. A script hash is the wrong fix: it covers server config
+   values that differ between the dev and prod Firebase projects, so a hash
+   computed for one environment fails CSP in the other.
+
+   ⚠️ The quoting is load-bearing. Flask's `tojson` escapes ' < > & but NOT " —
+   measured, not assumed. In a DOUBLE-quoted attribute the JSON's own quotes
+   terminate the attribute early and the config silently arrives empty, which
+   is the very inert-button failure this change exists to prevent. Single
+   quotes are required, and they are safe precisely because ' is escaped.
+
+   Public, client-side identifiers only (app/config.py) — not secrets. #}
+<div id="firebase-config" class="hidden" data-config='{{ firebase_config | tojson }}'></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"
+        integrity="sha384-AQ3POAMqIhwS81FrUH95ekxqBZHeP5tG2JfEL3+7GuTtfRLWnrRh32UxwzM+//A9"
+        crossorigin="anonymous"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"
+        integrity="sha384-TnlRYaR4JYz/lpaGuaiU61PjNberSA4vjLjtF+oRC/IkohkJqnWxw5EmDSOt1vA1"
+        crossorigin="anonymous"></script>
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+{% endblock %}

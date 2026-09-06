@@ -1,0 +1,103 @@
+{# T002 Screen 3 — Add/Edit Task, a modal over the Calendar.
+
+   BOTH modes live in this one form: modals.js opens it blank for add (POST
+   /api/tasks) or prefilled for edit (PUT /api/tasks/<id>). The edit path has
+   no trigger yet — Screen 4's "แก้ไข" button arrives at P6. Built now
+   because Screen 3 is a single locked form; splitting it would mean
+   rewriting this file at P6 instead of adding to it.
+
+   Field ids are the contract modals.js and tests/integration/test_task_modal.py
+   both read. The `name` attributes match the locked Firestore field names so
+   the payload keys are visible right here in the markup. #}
+{# `flex` is deliberately NOT here: it and `hidden` are both display
+   utilities, so together the winner depends on stylesheet order rather than
+   on intent. modals.js toggles the pair — hidden ⇄ flex — so exactly one
+   applies at a time. #}
+{# z-[10000]: .fc-popover is z-index:9999, unlayered, global — at z-50 a
+   modal opened from a chip inside a "+N more" popover would paint UNDER it
+   (P8 OPEN CONFLICTS 5). Both modal roots use the same z-[10000] so their
+   mutual stacking stays DOM-order only (see calendar.html's include-order
+   comment). #}
+<div id="task-modal"
+     class="hidden fixed inset-0 z-[10000] bg-black/50 items-center justify-center p-4"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="task-modal-title">
+  <div class="bg-white rounded-2xl shadow-md w-full max-w-md p-6 max-h-full overflow-y-auto">
+    <h2 id="task-modal-title" class="text-lg font-bold text-gray-800 mb-4">เพิ่มงาน</h2>
+
+    {# novalidate: the browser's own bubbles are English and would pre-empt the
+       Thai messages the server returns. Validation stays at the one boundary
+       that is authoritative (validate_task_payload). #}
+    <form id="task-form" novalidate>
+
+      <label for="task-title" class="block text-sm text-gray-600 mb-1">ชื่องาน</label>
+      <input id="task-title"
+             name="title"
+             type="text"
+             maxlength="200"
+             class="w-full border border-gray-300 rounded-lg px-3 py-2 mb-1" />
+      <p data-error-for="title" class="text-sm text-red-700 mb-3 empty:mb-0"></p>
+
+      <label for="task-subject" class="block text-sm text-gray-600 mb-1">วิชา</label>
+      <select id="task-subject"
+              name="subject"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 mb-1 bg-white">
+        {# Generated from app.constants.SUBJECTS — never hardcoded here. A
+           divergent copy would 400 at the boundary with no visible cause. #}
+        <option value="">เลือกวิชา</option>
+        {% for subject in subjects %}
+        <option value="{{ subject }}">{{ subject }}</option>
+        {% endfor %}
+      </select>
+      <p data-error-for="subject" class="text-sm text-red-700 mb-3 empty:mb-0"></p>
+
+      <label for="task-deadline" class="block text-sm text-gray-600 mb-1">วันส่ง</label>
+      {# Native date input (T002 "date input"): its value is already the
+         YYYY-MM-DD that parse_ymd expects, and it brings its own picker. #}
+      <input id="task-deadline"
+             name="deadline"
+             type="date"
+             class="w-full border border-gray-300 rounded-lg px-3 py-2 mb-1" />
+      <p data-error-for="deadline" class="text-sm text-red-700 mb-3 empty:mb-0"></p>
+
+      <label for="task-drive-link" class="block text-sm text-gray-600 mb-1">
+        ลิงก์ Google Drive <span class="text-gray-400">(ไม่บังคับ)</span>
+      </label>
+      <input id="task-drive-link"
+             name="drive_link"
+             type="text"
+             maxlength="500"
+             class="w-full border border-gray-300 rounded-lg px-3 py-2 mb-1" />
+      <p data-error-for="drive_link" class="text-sm text-red-700 mb-3 empty:mb-0"></p>
+
+      <label for="task-notes" class="block text-sm text-gray-600 mb-1">
+        หมายเหตุ <span class="text-gray-400">(ไม่บังคับ)</span>
+      </label>
+      <textarea id="task-notes"
+                name="notes"
+                rows="3"
+                maxlength="2000"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 mb-1"></textarea>
+      <p data-error-for="notes" class="text-sm text-red-700 mb-3 empty:mb-0"></p>
+
+      {# Catch-all for validation_error fields with no matching input (the
+         task-cap "limit" field), and for network/500 failures. Without it
+         those messages would render nowhere at all. #}
+      <p id="task-form-error" class="text-sm text-red-700 mb-3 empty:mb-0"></p>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button id="task-cancel"
+                type="button"
+                class="bg-gray-200 text-gray-700 rounded-lg px-4 py-2">
+          ยกเลิก
+        </button>
+        <button id="task-save"
+                type="submit"
+                class="bg-blue-600 text-white rounded-lg px-4 py-2">
+          บันทึก
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

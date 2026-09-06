@@ -1,0 +1,14 @@
+Flask==3.1.3
+Flask-Limiter==4.1.1
+firebase-admin==7.5.0
+# Direct dependency since P13, not merely transitive: app/errors.py imports
+# google.api_core.exceptions at module scope for the TOCTOU translation, and
+# create_app() imports app.errors unconditionally — so production startup now
+# hard-depends on it on every request path, not just the reminders feature.
+# Pinned to what firebase-admin 7.5.0 resolves to; bump the two together.
+google-api-core==2.32.0
+gunicorn==26.0.0
+python-dotenv==1.2.2
+# zoneinfo reads the OS tz database, which slim Linux images omit; without this
+# ZoneInfo("Asia/Bangkok") raises ZoneInfoNotFoundError on Render but works on macOS.
+tzdata==2026.3

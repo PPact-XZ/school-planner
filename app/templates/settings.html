@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}ตั้งค่า — School Planner{% endblock %}
+
+{% block navbar %}{% include "partials/_navbar.html" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 pt-4 pb-24">
+  {# T002 Screen 5 — layout is explicitly free ("จัดวาง card ยังไงก็ได้"), content
+     locked: name+email read-only, the notification checkbox, red ออกจากระบบ.
+     name/email are TEXT NODES only — see _navbar.html's rule. #}
+  <div class="bg-white rounded-2xl shadow-md p-6">
+    <h1 class="text-lg font-bold text-gray-800 mb-4">ตั้งค่า</h1>
+
+    <p class="text-sm text-gray-600 mb-1">ชื่อ</p>
+    <p id="settings-name" class="text-gray-800 mb-3">{{ user_name }}</p>
+
+    <p class="text-sm text-gray-600 mb-1">Email</p>
+    <p id="settings-email" class="text-gray-800 mb-4">{{ user_email }}</p>
+
+    {# Flow 5 (A-F18): auto-save on toggle, no บันทึก button. The initial
+       state is the server-rendered `checked` attribute from a boolean —
+       JS reads checkbox.checked, so no user data crosses template→JS. #}
+    <div class="flex items-center gap-2 mb-1">
+      <input id="settings-notify" type="checkbox" class="w-4 h-4"
+             {% if notify_enabled %}checked{% endif %} />
+      <label for="settings-notify" class="text-gray-800">ส่ง email แจ้งเตือนก่อนถึงกำหนด 1 วัน</label>
+      {# Fade: presence/absence of opacity-0 ONLY (default opacity is 1) —
+         never pair with opacity-100 (same-property trap). #}
+      {# role="status" (implicit aria-live="polite") — P7 review found a screen
+         reader never announced this confirmation. polite, not assertive: it
+         must not interrupt what the user is reading mid-sentence. #}
+      <span id="settings-saved" role="status"
+            class="text-sm text-green-800 transition-opacity duration-500 opacity-0">บันทึกแล้ว</span>
+    </div>
+    {# role="alert" (implicit aria-live="assertive") — matches login.html's
+       #login-error. A failed save must be announced immediately, because the
+       checkbox has just visibly reverted under the user. #}
+    <p id="settings-error" role="alert" class="text-sm text-red-700 mb-4 empty:mb-0"></p>
+
+    <button id="settings-logout" type="button"
+            class="bg-red-100 text-red-700 rounded-lg px-4 py-2">ออกจากระบบ</button>
+  </div>
+
+  {% include "partials/_schedule_section.html" %}
+</div>
+
+<script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+<script src="{{ url_for('static', filename='js/schedules.js') }}"></script>
+{% endblock %}
